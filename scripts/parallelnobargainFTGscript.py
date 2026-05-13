@@ -12,8 +12,11 @@ init_printing(use_unicode=True)
 
 import multiprocessing as mp
 from functools import partial
+from pathlib import Path
 
 import scipy.optimize as optimize
+
+OUTPUT_DIR = Path(__file__).resolve().parents[1] / "data" / "simulation_outputs"
 
 def U_D(gamma_1,gamma_0,C_1,r,delta):
     return (1-delta)*np.dot(r,gamma_1) - np.dot(np.dot(np.subtract(gamma_1,gamma_0),C_1),np.subtract(gamma_1,gamma_0))
@@ -294,9 +297,13 @@ def create_results_df(C_0, C_1, r, delta,thetaGs,thetaDs, output_file_name=None)
 
     # Save to CSV
     if output_file_name is not None:
-        G_strategy_results_parallel.to_csv(output_file_name, index=False)
+        output_path = Path(output_file_name)
+        if not output_path.is_absolute():
+            output_path = OUTPUT_DIR / output_path
     else:
-        G_strategy_results_parallel.to_csv('backup_nobargaining_results_parallel_june5.csv', index=False)
+        output_path = OUTPUT_DIR / 'backup_nobargaining_results_parallel_june5.csv'
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    G_strategy_results_parallel.to_csv(output_path, index=False)
     
     print(f"Parallel processing complete. Generated {len(G_strategy_results_parallel)} results.")
 
